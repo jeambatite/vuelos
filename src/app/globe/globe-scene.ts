@@ -187,6 +187,51 @@ export function createGlobe(container: HTMLElement, opts: { spinning: boolean })
   let spinning = opts.spinning;
   let raf = 0;
   let last = performance.now();
+  let velY = 0; // velocidad angular actual del giro (rad/s)
+  let dragging = false;
+  let lastX = 0;
+  let lastY = 0;
+  let lastT = 0;
+
+  // Arrastrar con el puntero para girar el globo; al soltar se reanuda el giro suavemente.
+  const canvas = renderer.domElement;
+  canvas.style.cursor = 'grab';
+  canvas.style.touchAction = 'pan-y'; // en táctil, el scroll vertical de la página sigue funcionando
+  canvas.style.userSelect = 'none';
+  const K = 0.006; // radianes por píxel arrastrado
+
+  const onDown = (e: PointerEvent): void => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastT = e.timeStamp;
+    velY = 0;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+  };
+  const onMove = (e: PointerEvent): void => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    const dt = Math.max(0.008, (e.timeStamp - lastT) / 1000);
+    globe.rotation.y += dx * K;
+    tilt.rotation.x = Math.max(-1.2, Math.min(1.2, tilt.rotation.x + dy * K));
+    velY = Math.max(-6, Math.min(6, velY + ((dx * K) / dt - velY) * 0.5));
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastT = e.timeStamp;
+  };
+  const onUp = (e: PointerEvent): void => {
+    if (!dragging) return;
+    dragging = false;
+    if (e.timeStamp - lastT > 80) velY = 0; // soltó después de quedarse quieto: sin inercia
+    if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    canvas.style.cursor = 'grab';
+  };
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  canvas.addEventListener('pointerup', onUp);
+  canvas.addEventListener('pointercancel', onUp);
 
   const resize = (): void => {
     const w = Math.max(1, container.clientWidth);
@@ -204,8 +249,12 @@ export function createGlobe(container: HTMLElement, opts: { spinning: boolean })
   const tick = (now: number): void => {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    if (!dragging) {
+      // La velocidad vuelve suavemente al giro normal (o a cero si está en pausa).
+      velY += ((spinning ? SPIN : 0) - velY) * Math.min(1, dt * 2.5);
+      globe.rotation.y += velY * dt;
+    }
     if (spinning) {
-      globe.rotation.y += dt * SPIN;
       for (const f of flyers) {
         f.t = (f.t + dt * f.speed) % 1;
         f.mesh.position.copy(f.curve.getPoint(f.t));
@@ -224,6 +273,10 @@ export function createGlobe(container: HTMLElement, opts: { spinning: boolean })
     dispose(): void {
       cancelAnimationFrame(raf);
       observer.disconnect();
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('pointercancel', onUp);
       scene.traverse((obj) => {
         const o = obj as Mesh;
         o.geometry?.dispose();

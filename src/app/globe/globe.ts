@@ -26,7 +26,16 @@ export class Globe implements OnDestroy {
 
   constructor() {
     afterNextRender(() => void this.iniciar());
-    effect(() => this.handle?.setSpinning(this.girando()));
+    effect(() => {
+      const on = this.girando(); // se lee siempre, para que el efecto dependa de la señal
+      this.handle?.setSpinning(on);
+    });
+  }
+
+  protected alternar(): void {
+    const on = !this.girando();
+    this.girando.set(on);
+    this.handle?.setSpinning(on);
   }
 
   private async iniciar(): Promise<void> {

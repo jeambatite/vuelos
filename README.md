@@ -8,7 +8,7 @@ Hecho con Angular (componentes standalone, signals y formularios reactivos).
 
 - Barra superior sticky con los parámetros de búsqueda: aerolínea, número de vuelo, origen, destino y fecha.
 - Avioncito de diseño en la esquina inferior izquierda de la barra, con una ruta punteada que recorre su borde.
-- Globo terráqueo 3D (three.js) en "Rastreo en vivo": gira hacia el este, con aeropuertos, rutas de ejemplo y aviones en movimiento. Se carga bajo demanda y tiene botón para pausar el giro.
+- Globo terráqueo 3D (three.js) en "Rastreo en vivo": gira hacia el este, con aeropuertos, rutas de ejemplo y aviones en movimiento. Se puede arrastrar con el mouse o el dedo (al soltar se reanuda el giro) y tiene botón para pausar. Se carga bajo demanda.
 - Panel de detalle de vuelo pendiente (llega en los siguientes pasos).
 
 ## Desarrollo
