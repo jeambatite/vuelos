@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar RD: seguimiento de vuelos en tiempo real</title>
+<style>
+:root{--bg:#f3f6f9;--card:#fff;--ink:#12202e;--mute:#5a6b7b;--line:#dce4ec;--sea:#d6e8f3;--land:#f1ede0;--landline:#cfc7ad;--accent:#1457c4;--rd:#0b8a63;--warn:#b86a00;--route:#8aa3bb;--plane:#12202e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0d1620;--card:#142130;--ink:#e7eef5;--mute:#93a5b7;--line:#243648;--sea:#0f2437;--land:#1d2d3b;--landline:#2c4256;--accent:#6cb0ff;--rd:#3fd69b;--warn:#f2a93b;--route:#4d6983;--plane:#eaf2fa}}
+:root[data-theme="dark"]{--bg:#0d1620;--card:#142130;--ink:#e7eef5;--mute:#93a5b7;--line:#243648;--sea:#0f2437;--land:#1d2d3b;--landline:#2c4256;--accent:#6cb0ff;--rd:#3fd69b;--warn:#f2a93b;--route:#4d6983;--plane:#eaf2fa}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.7rem;margin:0 0 4px;letter-spacing:-.01em}
+h1 small{font-size:.75rem;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:2px 9px;vertical-align:middle;margin-left:8px}
+.lead{margin:0 0 18px;color:var(--mute);max-width:62ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px}
+.map{overflow:hidden;position:relative}
+.map svg{display:block;width:100%;height:auto;background:var(--sea)}
+.map .note{position:absolute;left:10px;bottom:8px;font-size:.75rem;color:var(--mute);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.land{fill:var(--land);stroke:var(--landline);stroke-width:1}
+.route{fill:none;stroke:var(--route);stroke-width:1;stroke-dasharray:3 4;opacity:.55}
+.route.sel{stroke:var(--accent);stroke-width:2;stroke-dasharray:none;opacity:1}
+.ap circle{fill:var(--card);stroke:var(--mute);stroke-width:1.5}
+.ap.rd circle{fill:var(--rd);stroke:var(--card)}
+.ap text{font-size:11px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--sea);stroke-width:3px}
+.plane{cursor:pointer}
+.plane path{fill:var(--plane);stroke:var(--sea);stroke-width:1}
+.plane.late path{fill:var(--warn)}
+.plane .ring{fill:none;stroke:var(--accent);stroke-width:2;display:none}
+.plane.sel .ring{display:block}
+.side{padding:14px;display:flex;flex-direction:column;gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.kpi b{display:block;font-size:1.35rem;line-height:1.2}
+.kpi span{font-size:.78rem;color:var(--mute)}
+input[type=search]{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.list{display:flex;flex-direction:column;max-height:230px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+.list button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:8px;padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--line)}
+.list button:last-child{border-bottom:0}
+.list button:hover,.list button.sel{background:var(--bg)}
+.list button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.list .r{color:var(--mute);font-size:.85rem}
+.tag{font-size:.75rem;border-radius:99px;padding:1px 8px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.tag.late{color:var(--warn);border-color:var(--warn)}
+.detail h2{margin:0;font-size:1.15rem}
+.detail .route-name{color:var(--mute);margin:0 0 8px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0 10px}
+.bar i{display:block;height:100%;background:var(--accent)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0}
+dt{color:var(--mute)}dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.value{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px}
+.value div{padding:14px 16px}
+.value h3{margin:0 0 4px;font-size:1rem}
+.value p{margin:0;color:var(--mute)}
+.foot{margin-top:16px;color:var(--mute);font-size:.85rem;max-width:80ch}
+@media (max-width:860px){.grid,.value{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Radar RD<small>Concepto</small></h1>
+  <p class="lead">Seguimiento de vuelos en tiempo real para pasajeros, operaciones y aeropuertos, pensado como propuesta de mejora para Arajet y Aerodom.</p>
+
+  <div class="grid">
+    <section class="card map">
+      <svg id="map" viewBox="0 0 960 780" role="img" aria-label="Mapa del Caribe con vuelos en movimiento"></svg>
+      <span class="note">Datos simulados, tiempo acelerado</span>
+    </section>
+
+    <aside class="card side">
+      <div class="kpis">
+        <div class="kpi"><b id="k1">0</b><span>En vuelo</span></div>
+        <div class="kpi"><b id="k2">0%</b><span>Puntualidad</span></div>
+        <div class="kpi"><b id="k3">0</b><span>Con retraso</span></div>
+      </div>
+      <input id="q" type="search" placeholder="Buscar vuelo, origen o destino (ej. DM201, MIA)" aria-label="Buscar vuelo">
+      <div class="list" id="list"></div>
+      <div class="detail" id="detail"></div>
+    </aside>
+  </div>
+
+  <section class="value">
+    <div class="card"><h3>Pasajeros</h3><p>Estado en vivo y hora de llegada precisa para quien espera en el aeropuerto, sin llamar al centro de atención.</p></div>
+    <div class="card"><h3>Operaciones de la aerolínea</h3><p>Vista de flota y alertas de retraso para reaccionar antes en conexiones, tripulación y reasignación de aeronaves.</p></div>
+    <div class="card"><h3>Aeropuertos</h3><p>Anticipar llegadas para planificar puertas, migración y flujo de pasajeros durante las horas pico.</p></div>
+  </section>
+  <p class="foot">Los vuelos de este prototipo son ilustrativos y sus datos están simulados. La versión real combinaría señales ADS-B públicas con el sistema operativo de la aerolínea (puertas, retrasos, tripulación).</p>
+</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const X=lon=>(lon+88)*40, Y=lat=>(27.5-lat)*40;
+const AP={SDQ:[18.4297,-69.6689,'Santo Domingo',1,[0,17,'middle']],STI:[19.4061,-70.6047,'Santiago',1,[-8,14,'end']],PUJ:[18.5674,-68.3634,'Punta Cana',1,[8,4,'start']],POP:[19.7579,-70.57,'Puerto Plata',1,[-8,-4,'end']],SJU:[18.4394,-66.0018,'San Juan',0],MIA:[25.7959,-80.287,'Miami',0],PTY:[9.0714,-79.3835,'Panamá',0],CUR:[12.1889,-68.9598,'Curazao',0],CUN:[21.0365,-86.8771,'Cancún',0]};
+const LAND=[
+ [[-74.45,18.4],[-73.8,18.1],[-72.9,18.2],[-72,18],[-71.65,17.75],[-71.4,17.6],[-70.7,18.2],[-70,18.35],[-69.6,18.4],[-68.9,18.4],[-68.4,18.45],[-68.35,18.9],[-68.8,19.1],[-69.3,19.2],[-69.8,19.3],[-70.4,19.7],[-70.9,19.9],[-71.7,19.9],[-72.5,19.95],[-73.1,19.9],[-73.4,19.85],[-73,19.65],[-72.6,19.4],[-72.8,19.3],[-72.8,18.95],[-73.4,18.85],[-74,18.65]],
+ [[-67.2,18.5],[-66.5,18.5],[-65.7,18.4],[-65.6,18.2],[-66.5,17.95],[-67.2,18]],
+ [[-85,21.9],[-84,22.6],[-82.5,23.1],[-80.5,23],[-79,22.5],[-77.5,21.8],[-76,21.2],[-74.2,20.2],[-74.2,20],[-75.6,19.95],[-77.2,20],[-78.2,21.2],[-80,21.8],[-82,22.2],[-83.5,22.2],[-84.5,21.8]],
+ [[-78.35,18.4],[-77.2,18.5],[-76.2,18.2],[-76.8,17.85],[-77.8,18]],
+ [[-80,27.5],[-80,25.2],[-81,25.2],[-81.8,26.1],[-82.6,27.5]],
+ [[-88,21.6],[-87,21.6],[-86.8,20.5],[-87.5,18.5],[-88,18]],
+ [[-84,8],[-83,9.5],[-82,9],[-80,9.4],[-79,9.6],[-77.5,8.8],[-77.3,8]],
+ [[-77.3,8.7],[-76.5,9.4],[-75.5,10.8],[-74.5,11.3],[-72.5,11.8],[-71.4,12.4],[-70,11.5],[-68.5,10.6],[-64,10.6],[-64,8],[-77.3,8]]
+];
+const svg=document.getElementById('map');
+const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e};
+LAND.forEach(p=>mk('path',{class:'land',d:'M'+p.map(c=>X(c[0]).toFixed(1)+','+Y(c[1]).toFixed(1)).join('L')+'Z'}));
+const gR=mk('g',{}),gA=mk('g',{}),gP=mk('g',{});
+for(const k in AP){const a=AP[k],g=mk('g',{class:'ap'+(a[3]?' rd':'')},gA),l=a[4]||[8,4,'start'];
+ mk('circle',{cx:X(a[1]),cy:Y(a[0]),r:a[3]?5:4},g);
+ const t=mk('text',{x:X(a[1])+l[0],y:Y(a[0])+l[1],'text-anchor':l[2]},g);t.textContent=k}
+const rad=Math.PI/180;
+const dist=(a,b)=>{const A=AP[a],B=AP[b],dl=(B[1]-A[1])*rad,dp=(B[0]-A[0])*rad;
+ const h=Math.sin(dp/2)**2+Math.cos(A[0]*rad)*Math.cos(B[0]*rad)*Math.sin(dl/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+const seed=[['DM201','SDQ','MIA',.35,0],['DM418','SDQ','SJU',.6,0],['DM502','PTY','SDQ',.2,15],['DM155','PUJ','PTY',.5,0],['DM330','MIA','STI',.7,0],['DM276','CUN','SDQ',.4,25],['DM640','SDQ','CUR',.15,0],['DM712','SJU','PUJ',.8,0],['DM089','POP','MIA',.55,0]];
+const F=seed.map(s=>({n:s[0],o:s[1],d:s[2],p:s[3],delay:s[4]}));
+const PL='M12 2L14 9L22 14V16L14 13.5L13.5 19L16 21V22L12 21L8 22V21L10.5 19L10 13.5L2 16V14L10 9Z';
+function setup(f){f.km=dist(f.o,f.d);f.dur=f.km/800*60+25;
+ const a=[X(AP[f.o][1]),Y(AP[f.o][0])],b=[X(AP[f.d][1]),Y(AP[f.d][0])],dx=b[0]-a[0],dy=b[1]-a[1];
+ f.P0=a;f.P2=b;f.C=[(a[0]+b[0])/2-dy*.12,(a[1]+b[1])/2+dx*.12];
+ f.route.setAttribute('d','M'+a+' Q'+f.C+' '+b)}
+F.forEach(f=>{f.route=mk('path',{class:'route'},gR);
+ f.g=mk('g',{class:'plane',tabindex:0,role:'button','aria-label':'Vuelo '+f.n},gP);
+ mk('circle',{class:'ring',r:15},f.g);mk('path',{d:PL,transform:'translate(-12,-12)'},f.g);
+ f.g.addEventListener('click',()=>pick(f.n));
+ f.g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(f.n)}});
+ setup(f)});
+let sel=null,filt='';
+const fmt=m=>new Date(base+m*6e4).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
+let base=Date.now(),sim=0;
+function state(f){const t=f.p;return {t,prof:Math.min(1,t/.15,(1-t)/.15),st:t<.06?'Despegando':t>.94?'Aterrizando':'En ruta'}}
+function pos(f,t){const u=1-t,x=u*u*f.P0[0]+2*u*t*f.C[0]+t*t*f.P2[0],y=u*u*f.P0[1]+2*u*t*f.C[1]+t*t*f.P2[1],
+ dx=2*u*(f.C[0]-f.P0[0])+2*t*(f.P2[0]-f.C[0]),dy=2*u*(f.C[1]-f.P0[1])+2*t*(f.P2[1]-f.C[1]);
+ return [x,y,Math.atan2(dx,-dy)/rad]}
+function pick(n){sel=n;draw();renderList()}
+function renderList(){const L=document.getElementById('list');
+ const q=filt.trim().toLowerCase();
+ const rows=F.filter(f=>!q||(f.n+f.o+f.d+AP[f.o][2]+AP[f.d][2]).toLowerCase().includes(q));
+ L.innerHTML=rows.length?rows.map(f=>`<button data-n="${f.n}" class="${f.n===sel?'sel':''}"><span><b>${f.n}</b> <span class="r">${f.o} a ${f.d}</span></span><span class="tag ${f.delay?'late':''}">${f.delay?'Retraso '+f.delay+' min':'A tiempo'}</span></button>`).join(''):'<div style="padding:10px" class="r">Sin resultados</div>';
+ L.querySelectorAll('button').forEach(b=>b.onclick=()=>pick(b.dataset.n))}
+function renderDetail(){const D=document.getElementById('detail'),f=F.find(x=>x.n===sel);
+ if(!f){D.innerHTML='<p class="r" style="color:var(--mute);margin:0">Toca un avión o un vuelo de la lista para ver sus datos.</p>';return}
+ const s=state(f),rem=(1-f.p)*f.dur;
+ D.innerHTML=`<h2>${f.n}</h2><p class="route-name">${AP[f.o][2]} (${f.o}) a ${AP[f.d][2]} (${f.d})</p>
+ <div class="bar"><i style="width:${(f.p*100).toFixed(1)}%"></i></div>
+ <dl><dt>Estado</dt><dd>${s.st}${f.delay?' · retraso '+f.delay+' min':''}</dd>
+ <dt>Altitud</dt><dd>${Math.round(s.prof*37000/100)*100} pies</dd>
+ <dt>Velocidad</dt><dd>${Math.round(280+s.prof*550)} km/h</dd>
+ <dt>Distancia restante</dt><dd>${Math.round((1-f.p)*f.km)} km</dd>
+ <dt>Llegada estimada</dt><dd>${fmt(sim+rem+f.delay)}</dd></dl>`}
+function draw(){F.forEach(f=>{const p=pos(f,f.p);
+ f.g.setAttribute('transform',`translate(${p[0].toFixed(1)},${p[1].toFixed(1)}) rotate(${p[2].toFixed(1)})`);
+ f.g.classList.toggle('sel',f.n===sel);f.g.classList.toggle('late',!!f.delay);
+ f.route.classList.toggle('sel',f.n===sel)});
+ document.getElementById('k1').textContent=F.length;
+ const late=F.filter(f=>f.delay).length;
+ document.getElementById('k2').textContent=Math.round((F.length-late)/F.length*100)+'%';
+ document.getElementById('k3').textContent=late}
+let last=performance.now(),tick=0;
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;sim+=dt*2;
+ F.forEach(f=>{f.p+=dt*2/f.dur;if(f.p>=1){[f.o,f.d]=[f.d,f.o];f.p=0;f.n='DM'+(parseInt(f.n.slice(2))+1);setup(f);if(sel&&f.g.classList.contains('sel'))sel=f.n;renderList()}});
+ draw();renderDetail();requestAnimationFrame(loop)}
+document.getElementById('q').addEventListener('input',e=>{filt=e.target.value;renderList()});
+renderList();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
