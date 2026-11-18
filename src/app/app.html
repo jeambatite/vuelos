@@ -1,0 +1,25 @@
+<app-top-bar (buscar)="alBuscar($event)" />
+
+<main class="page">
+  <section class="resumen" aria-live="polite">
+    @if (filtros().length) {
+      <h1>Rastreando vuelo</h1>
+      <ul class="chips">
+        @for (f of filtros(); track f.etiqueta) {
+          <li><span>{{ f.etiqueta }}</span> {{ f.valor }}</li>
+        }
+      </ul>
+    } @else {
+      <h1>Rastreo en vivo</h1>
+      <p>Usa la barra superior para buscar un vuelo por número o por ruta.</p>
+    }
+  </section>
+
+  <section aria-label="Globo de rastreo en vivo">
+    <app-globe />
+  </section>
+
+  <section class="panel detalle" aria-label="Detalle del vuelo">
+    <p>El detalle del vuelo seleccionado se mostrará aquí.</p>
+  </section>
+</main>
