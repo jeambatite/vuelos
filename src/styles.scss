@@ -1,0 +1,41 @@
+@use '@fontsource-variable/sora';
+@use '@fontsource-variable/dm-sans';
+
+:root {
+  --bar: #0b2a45;
+  --accent: #2ec4b6;
+  --amber: #ffb703;
+  --bg: #eef3f7;
+  --card: #ffffff;
+  --text: #12202e;
+  --mute: #566878;
+  --line: #d6e1ea;
+  --font-display: 'Sora Variable', 'Sora', system-ui, sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bar: #071c30;
+    --bg: #0a131c;
+    --card: #122030;
+    --text: #e7eef5;
+    --mute: #93a5b7;
+    --line: #22364a;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-padding-top: 140px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 15px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
