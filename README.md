@@ -8,7 +8,8 @@ Hecho con Angular (componentes standalone, signals y formularios reactivos).
 
 - Barra superior sticky con los parámetros de búsqueda: aerolínea, número de vuelo, origen, destino y fecha.
 - Avioncito de diseño en la esquina inferior izquierda de la barra, con una ruta punteada que recorre su borde.
-- Contenido de ejemplo para ver el comportamiento sticky (el mapa y el detalle llegan en los siguientes pasos).
+- Globo terráqueo 3D (three.js) en "Rastreo en vivo": gira hacia el este, con aeropuertos, rutas de ejemplo y aviones en movimiento. Se carga bajo demanda y tiene botón para pausar el giro.
+- Panel de detalle de vuelo pendiente (llega en los siguientes pasos).
 
 ## Desarrollo
 

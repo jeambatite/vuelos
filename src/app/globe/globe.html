@@ -1,0 +1,21 @@
+<div class="globe">
+  <div
+    #stage
+    class="stage"
+    role="img"
+    aria-label="Globo terráqueo en 3D girando, con rutas de vuelo desde República Dominicana"
+  ></div>
+
+  @if (error()) {
+    <p class="fallback">No se pudo iniciar el globo 3D en este navegador.</p>
+  }
+
+  <p class="caption">
+    <strong>República Dominicana</strong> y sus rutas principales
+    <small>Rutas de ejemplo, no son vuelos reales</small>
+  </p>
+
+  <button class="toggle" type="button" (click)="girando.set(!girando())">
+    {{ girando() ? 'Pausar giro' : 'Girar' }}
+  </button>
+</div>

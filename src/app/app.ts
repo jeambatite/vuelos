@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Globe } from './globe/globe';
 import { BusquedaVuelo, TopBar } from './top-bar/top-bar';
 
 @Component({
   selector: 'app-root',
-  imports: [TopBar],
+  imports: [TopBar, Globe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

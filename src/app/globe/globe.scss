@@ -1,0 +1,51 @@
+:host { display: block; }
+
+.globe {
+  position: relative;
+  height: clamp(420px, 70vh, 680px);
+  overflow: hidden;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 42%, #202020 0%, #0a0a0a 58%, #000000 100%);
+  color: #eaf3fa;
+}
+
+.stage { position: absolute; inset: 0; }
+
+.caption {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  margin: 0;
+  max-width: 60%;
+  font-size: 14px;
+  line-height: 1.35;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+
+  small { display: block; margin-top: 2px; color: #a8a8a8; font-size: 12.5px; }
+}
+
+.toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: inherit;
+  font: 600 13.5px var(--font-body);
+  cursor: pointer;
+
+  &:hover { background: rgba(255, 255, 255, 0.12); }
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: #a8a8a8;
+}

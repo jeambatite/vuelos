@@ -18,5 +18,6 @@ describe('App', () => {
     expect(el.querySelector('app-top-bar header.bar')).toBeTruthy();
     expect(el.querySelector('#numero')).toBeTruthy();
     expect(el.querySelector('svg.plane')).toBeTruthy();
+    expect(el.querySelector('app-globe .stage')).toBeTruthy();
   });
 });
