@@ -5,9 +5,11 @@ import {
   OnDestroy,
   afterNextRender,
   effect,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
+import type { Flight } from '../core/flight.model';
 import type { GlobeHandle } from './globe-scene';
 
 @Component({
@@ -21,12 +23,30 @@ export class Globe implements OnDestroy {
   private handle?: GlobeHandle;
   private destroyed = false;
 
+  readonly flights = input<Flight[]>([]);
+  readonly fuente = input('');
+  readonly simulado = input(false);
+  readonly error = input<string | null>(null);
+
   protected readonly girando = signal(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-  protected readonly error = signal(false);
+  protected readonly fallo = signal(false);
 
   constructor() {
     afterNextRender(() => void this.iniciar());
-    effect(() => this.handle?.setSpinning(this.girando()));
+    effect(() => {
+      const on = this.girando(); // se lee siempre, para que el efecto dependa de la señal
+      this.handle?.setSpinning(on);
+    });
+    effect(() => {
+      const lista = this.flights(); // se lee siempre, para que el efecto dependa de la señal
+      this.handle?.setFlights(lista);
+    });
+  }
+
+  protected alternar(): void {
+    const on = !this.girando();
+    this.girando.set(on);
+    this.handle?.setSpinning(on);
   }
 
   private async iniciar(): Promise<void> {
@@ -35,8 +55,9 @@ export class Globe implements OnDestroy {
       const { createGlobe } = await import('./globe-scene');
       if (this.destroyed) return;
       this.handle = createGlobe(this.stage().nativeElement, { spinning: this.girando() });
+      this.handle.setFlights(this.flights());
     } catch {
-      this.error.set(true);
+      this.fallo.set(true);
     }
   }
 

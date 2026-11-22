@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FlightQuery } from './core/flight.model';
+import { FlightTrackerService } from './core/flight-tracker.service';
 import { Globe } from './globe/globe';
-import { BusquedaVuelo, TopBar } from './top-bar/top-bar';
+import { TopBar } from './top-bar/top-bar';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +12,8 @@ import { BusquedaVuelo, TopBar } from './top-bar/top-bar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected readonly busqueda = signal<BusquedaVuelo | null>(null);
+  protected readonly tracker = inject(FlightTrackerService);
+  protected readonly busqueda = signal<FlightQuery | null>(null);
 
   protected readonly filtros = computed(() => {
     const b = this.busqueda();
@@ -24,7 +27,13 @@ export class App {
     ].filter((f): f is { etiqueta: string; valor: string } => f !== null);
   });
 
-  protected alBuscar(b: BusquedaVuelo): void {
+  protected alBuscar(b: FlightQuery): void {
     this.busqueda.set(b);
+    this.tracker.buscar(b);
+  }
+
+  protected alLimpiar(): void {
+    this.busqueda.set(null);
+    this.tracker.limpiar();
   }
 }
