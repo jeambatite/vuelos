@@ -47,7 +47,7 @@ describe('App', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const caption = (fixture.nativeElement as HTMLElement).querySelector('app-globe .caption')!.textContent!;
-    expect(caption).toContain('12 vuelos en vivo');
+    expect(caption).toContain('14 vuelos en vivo');
     expect(caption).toContain('datos simulados');
   });
 });

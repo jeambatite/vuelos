@@ -3,11 +3,15 @@
     #stage
     class="stage"
     role="img"
-    aria-label="Globo terráqueo en 3D girando, con rutas de vuelo desde República Dominicana"
+    aria-label="Globo terráqueo en 3D girando, con rutas de vuelo desde República Dominicana. Pasa el cursor sobre un país para resaltarlo y haz click para acercarte."
   ></div>
 
   @if (fallo()) {
     <p class="fallback">No se pudo iniciar el globo 3D en este navegador.</p>
+  }
+
+  @if (hovered(); as pais) {
+    <p class="hover-label" aria-hidden="true">{{ pais }}</p>
   }
 
   <p class="caption">
@@ -15,14 +19,23 @@
     <small>
       Fuente: {{ fuente() }}@if (simulado()) {
         (datos simulados)
-      }. Arrastra para girarlo.
+      }. Arrastra para girarlo, o haz click en un país para acercarte.
     </small>
     @if (error(); as aviso) {
       <small class="aviso">{{ aviso }}</small>
     }
   </p>
 
-  <button class="toggle" type="button" (click)="alternar()">
-    {{ girando() ? 'Pausar giro' : 'Girar' }}
-  </button>
+  <ul class="legend" aria-hidden="true">
+    <li><i class="dot verde"></i>Nacional o saliendo del país</li>
+    <li><i class="dot amarillo"></i>Entrando al país</li>
+  </ul>
+
+  @if (zoomedCountry(); as pais) {
+    <button class="volver" type="button" (click)="volver()">◂ Volver al planeta ({{ pais }})</button>
+  } @else {
+    <button class="toggle" type="button" (click)="alternar()">
+      {{ girando() ? 'Pausar giro' : 'Girar' }}
+    </button>
+  }
 </div>

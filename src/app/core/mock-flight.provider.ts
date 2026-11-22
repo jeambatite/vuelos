@@ -28,6 +28,9 @@ const ROUTES: MockRoute[] = [
   { number: 910, from: 'SDQ', to: 'JFK', phase: 0.3, delay: 0 },
   { number: 780, from: 'PUJ', to: 'MAD', phase: 0.45, delay: 10 },
   { number: 345, from: 'STI', to: 'JFK', phase: 0.9, delay: 0 },
+  // Rutas nacionales, para ver el color de los vuelos domésticos en el globo.
+  { number: 150, from: 'SDQ', to: 'PUJ', phase: 0.25, delay: 0 },
+  { number: 260, from: 'STI', to: 'POP', phase: 0.65, delay: 0 },
 ];
 
 /**

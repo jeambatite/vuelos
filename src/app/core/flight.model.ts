@@ -1,3 +1,5 @@
+import { airport } from './airports';
+
 /** Un vuelo con su posición. Es el único formato que entiende la app: cada API se adapta a este modelo. */
 export interface Flight {
   /** Identificador estable entre actualizaciones (ej. icao24 o id interno). */
@@ -24,6 +26,26 @@ export interface Flight {
 }
 
 /** Parámetros de búsqueda de la barra superior. */
+/**
+ * Cómo se ve un vuelo respecto al país de referencia (República Dominicana):
+ * nacional (ambos aeropuertos dentro), saliente (sale del país), entrante (llega al país)
+ * u otro (ninguno de los dos aeropuertos es del país, ej. una ruta Miami-Nueva York).
+ */
+export type FlightClass = 'nacional' | 'saliente' | 'entrante' | 'otro';
+
+export function classifyRoute(origin: string, destination: string): FlightClass {
+  const o = airport(origin)?.rd ?? false;
+  const d = airport(destination)?.rd ?? false;
+  if (o && d) return 'nacional';
+  if (o && !d) return 'saliente';
+  if (!o && d) return 'entrante';
+  return 'otro';
+}
+
+export function classifyFlight(f: Flight): FlightClass {
+  return f.origin && f.destination ? classifyRoute(f.origin, f.destination) : 'otro';
+}
+
 export interface FlightQuery {
   aerolinea: string;
   numero: string;

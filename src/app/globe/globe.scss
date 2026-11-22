@@ -11,12 +11,26 @@
 
 .stage { position: absolute; inset: 0; }
 
+.hover-label {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  margin: 0;
+  padding: 4px 11px;
+  border-radius: 99px;
+  background: rgba(46, 196, 182, 0.18);
+  border: 1px solid #2ec4b6;
+  color: #eafffb;
+  font: 600 13.5px var(--font-body);
+  pointer-events: none;
+}
+
 .caption {
   position: absolute;
   left: 16px;
   bottom: 14px;
   margin: 0;
-  max-width: 60%;
+  max-width: 56%;
   font-size: 14px;
   line-height: 1.35;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
@@ -25,7 +39,39 @@
   small { display: block; margin-top: 2px; color: #a8a8a8; font-size: 12.5px; }
 }
 
-.toggle {
+.aviso { color: #fff; font-weight: 600; }
+
+.legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  pointer-events: none;
+
+  li { display: flex; align-items: center; gap: 6px; }
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+
+  &.verde { background: #2ecc71; }
+  &.amarillo { background: #ffd60a; }
+}
+
+.toggle,
+.volver {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -33,7 +79,7 @@
   padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(7, 28, 48, 0.6);
   color: inherit;
   font: 600 13.5px var(--font-body);
   cursor: pointer;
@@ -41,13 +87,18 @@
   &:hover { background: rgba(255, 255, 255, 0.12); }
 }
 
+.volver { border-color: #2ec4b6; background: rgba(46, 196, 182, 0.22); }
+
 .fallback {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   margin: 0;
-  color: #a8a8a8;
+  color: #9fb6ca;
 }
 
-.aviso { color: #fff; font-weight: 600; }
+@media (max-width: 620px) {
+  .caption { max-width: 70%; }
+  .legend { left: 14px; right: auto; bottom: auto; top: 56px; }
+}
