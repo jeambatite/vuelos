@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { extrapolate } from './extrapolate';
+import { findCountryAt } from './countries';
+import { classifyRoute } from './flight.model';
 import { FlightDataProvider } from './flight-data.provider';
 import { Flight, FlightQuery } from './flight.model';
 import { provideFlightData } from './provide-flight-data';
@@ -23,7 +25,7 @@ describe('MockFlightProvider', () => {
 
   it('devuelve vuelos con el formato del modelo', async () => {
     const flights = await firstValueFrom(provider.getFlights(null));
-    expect(flights.length).toBe(12);
+    expect(flights.length).toBe(14);
     expect(flights.every((f) => Math.abs(f.lat) <= 90 && Math.abs(f.lon) <= 180)).toBe(true);
   });
 
@@ -53,5 +55,26 @@ describe('extrapolate', () => {
 
   it('no mueve un avión en tierra', () => {
     expect(extrapolate({ ...base, onGround: true }, 10_000)).toEqual({ lat: 18, lon: -70 });
+  });
+});
+
+describe('classifyRoute', () => {
+  it('distingue vuelos nacionales, salientes y entrantes', () => {
+    expect(classifyRoute('SDQ', 'PUJ')).toBe('nacional'); // ambos en RD
+    expect(classifyRoute('SDQ', 'MIA')).toBe('saliente'); // sale de RD
+    expect(classifyRoute('MIA', 'SDQ')).toBe('entrante'); // llega a RD
+    expect(classifyRoute('MIA', 'JFK')).toBe('otro'); // ninguno es de RD
+  });
+});
+
+describe('findCountryAt', () => {
+  // Puntos bien dentro del país (no justo en la costa, donde el límite exacto es ambiguo incluso en la realidad).
+  it('ubica un punto conocido dentro de su país', () => {
+    expect(findCountryAt(19.4061, -70.6047)?.name).toBe('Dominican Rep.'); // Santiago, RD
+    expect(findCountryAt(39.0, -98.0)?.name).toBe('United States of America'); // centro de EE. UU.
+  });
+
+  it('no asigna país a un punto en medio del océano', () => {
+    expect(findCountryAt(0, -40)).toBeNull();
   });
 });

@@ -30,6 +30,8 @@ export class Globe implements OnDestroy {
 
   protected readonly girando = signal(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   protected readonly fallo = signal(false);
+  protected readonly hovered = signal<string | null>(null);
+  protected readonly zoomedCountry = signal<string | null>(null);
 
   constructor() {
     afterNextRender(() => void this.iniciar());
@@ -49,12 +51,20 @@ export class Globe implements OnDestroy {
     this.handle?.setSpinning(on);
   }
 
+  protected volver(): void {
+    this.handle?.zoomOut();
+  }
+
   private async iniciar(): Promise<void> {
     try {
       // three.js se carga aparte para no pesar en la carga inicial de la página.
       const { createGlobe } = await import('./globe-scene');
       if (this.destroyed) return;
-      this.handle = createGlobe(this.stage().nativeElement, { spinning: this.girando() });
+      this.handle = createGlobe(this.stage().nativeElement, {
+        spinning: this.girando(),
+        onHoverChange: (nombre) => this.hovered.set(nombre),
+        onZoomChange: (nombre) => this.zoomedCountry.set(nombre),
+      });
       this.handle.setFlights(this.flights());
     } catch {
       this.fallo.set(true);
