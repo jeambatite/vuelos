@@ -1,30 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-
-export interface BusquedaVuelo {
-  aerolinea: string;
-  numero: string;
-  origen: string;
-  destino: string;
-  fecha: string;
-}
-
-const AEROPUERTOS: { codigo: string; ciudad: string }[] = [
-  { codigo: 'SDQ', ciudad: 'Santo Domingo' },
-  { codigo: 'STI', ciudad: 'Santiago' },
-  { codigo: 'PUJ', ciudad: 'Punta Cana' },
-  { codigo: 'POP', ciudad: 'Puerto Plata' },
-  { codigo: 'LRM', ciudad: 'La Romana' },
-  { codigo: 'AZS', ciudad: 'Samaná' },
-  { codigo: 'SJU', ciudad: 'San Juan' },
-  { codigo: 'MIA', ciudad: 'Miami' },
-  { codigo: 'JFK', ciudad: 'Nueva York' },
-  { codigo: 'PTY', ciudad: 'Panamá' },
-  { codigo: 'BOG', ciudad: 'Bogotá' },
-  { codigo: 'CUR', ciudad: 'Curazao' },
-  { codigo: 'CUN', ciudad: 'Cancún' },
-  { codigo: 'MAD', ciudad: 'Madrid' },
-];
+import { AIRPORT_LIST } from '../core/airports';
+import { FlightQuery } from '../core/flight.model';
 
 /** Fecha de hoy (AAAA-MM-DD) en la zona horaria de República Dominicana. */
 function hoyRD(): string {
@@ -41,9 +18,10 @@ function hoyRD(): string {
 export class TopBar {
   private readonly fb = inject(FormBuilder);
 
-  readonly buscar = output<BusquedaVuelo>();
+  readonly buscar = output<FlightQuery>();
+  readonly limpio = output<void>();
 
-  protected readonly aeropuertos = AEROPUERTOS;
+  protected readonly aeropuertos = AIRPORT_LIST;
   protected readonly abierto = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -68,6 +46,7 @@ export class TopBar {
   protected limpiar(): void {
     this.form.reset({ aerolinea: 'todas', numero: '', origen: '', destino: '', fecha: hoyRD() });
     this.error.set(null);
+    this.limpio.emit();
   }
 
   protected enviar(): void {

@@ -6,13 +6,20 @@
     aria-label="Globo terráqueo en 3D girando, con rutas de vuelo desde República Dominicana"
   ></div>
 
-  @if (error()) {
+  @if (fallo()) {
     <p class="fallback">No se pudo iniciar el globo 3D en este navegador.</p>
   }
 
   <p class="caption">
-    <strong>República Dominicana</strong> y sus rutas principales
-    <small>Arrastra para girarlo. Rutas de ejemplo, no son vuelos reales</small>
+    <strong>{{ flights().length }} {{ flights().length === 1 ? 'vuelo' : 'vuelos' }} en vivo</strong>
+    <small>
+      Fuente: {{ fuente() }}@if (simulado()) {
+        (datos simulados)
+      }. Arrastra para girarlo.
+    </small>
+    @if (error(); as aviso) {
+      <small class="aviso">{{ aviso }}</small>
+    }
   </p>
 
   <button class="toggle" type="button" (click)="alternar()">

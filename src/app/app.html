@@ -1,4 +1,4 @@
-<app-top-bar (buscar)="alBuscar($event)" />
+<app-top-bar (buscar)="alBuscar($event)" (limpio)="alLimpiar()" />
 
 <main class="page">
   <section class="resumen" aria-live="polite">
@@ -9,6 +9,9 @@
           <li><span>{{ f.etiqueta }}</span> {{ f.valor }}</li>
         }
       </ul>
+      @if (!tracker.flights().length && !tracker.error()) {
+        <p class="vacio">Ningún vuelo coincide con la búsqueda.</p>
+      }
     } @else {
       <h1>Rastreo en vivo</h1>
       <p>Usa la barra superior para buscar un vuelo por número o por ruta.</p>
@@ -16,7 +19,12 @@
   </section>
 
   <section aria-label="Globo de rastreo en vivo">
-    <app-globe />
+    <app-globe
+      [flights]="tracker.flights()"
+      [fuente]="tracker.sourceName"
+      [simulado]="tracker.simulated"
+      [error]="tracker.error()"
+    />
   </section>
 
   <section class="panel detalle" aria-label="Detalle del vuelo">
